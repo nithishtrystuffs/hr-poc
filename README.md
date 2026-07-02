@@ -83,13 +83,6 @@ section 9 for why). The backend is configured to reach it at
 | Reports (PDF generation) | Done (basic layout — style it further if time allows) |
 | Frontend | **Stub only** — Login + Directory pages exist and call the real API. Executive Dashboard, Profile, Onboarding/Offboarding Tracker UI, and Reports Dashboard still need building. |
 
-## Day 1 checklist
-
-- [ ] Everyone: `git clone`, get local quick-start running, confirm you can hit `/docs`
-- [ ] Nithishkumar R: swap `DATABASE_URL` to real Postgres once docker-compose is confirmed working on your machine; review/extend DB schema if needed
-- [ ] Nithish A: review `hrms_connector.py` + `hrms_sync.py` — this is your Day 2 starting point
-- [ ] Mohan Raj D: pull the Ollama model, confirm `ai_client.prewarm()` succeeds on startup, review agent prompts in `app/agents/`
-- [ ] Keerthana A: confirm `npm run dev` works, review `lib/api.js` (every backend call you'll need is already wrapped there)
 
 ## Notes
 
