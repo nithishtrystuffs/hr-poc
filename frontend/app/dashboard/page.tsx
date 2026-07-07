@@ -1,189 +1,116 @@
 "use client";
-
 import { useEffect, useState } from "react";
-import {
-  ResponsiveContainer,
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  Tooltip,
-  CartesianGrid,
-} from "recharts";
+import { BarChart, Bar, LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
 import { api } from "../../lib/api";
 import { useAuth } from "../../lib/useAuth";
+import Sidebar from "../components/Sidebar";
 
-function StatCard({
-  label,
-  value,
-}: {
-  label: string;
-  value: string | number;
-}) {
+function Widget({ label, value }: { label: string; value: string | number }) {
   return (
-    <div className="rounded-2xl border bg-white p-6 shadow-sm hover:shadow-md transition">
-      <p className="text-sm text-gray-500">{label}</p>
-      <h3 className="mt-3 text-4xl font-bold text-[#14213D]">{value}</h3>
+    <div style={{ border: "1px solid #ddd", borderRadius: 8, padding: 16, minWidth: 150 }}>
+      <div style={{ fontSize: 13, color: "#666" }}>{label}</div>
+      <div style={{ fontSize: 26, fontWeight: 600 }}>{value}</div>
     </div>
   );
 }
 
+function timeAgo(timestamp: string) {
+  const diffMs = Date.now() - new Date(timestamp).getTime();
+  const mins = Math.floor(diffMs / 60000);
+  if (mins < 1) return "just now";
+  if (mins < 60) return `${mins} min ago`;
+  return `${Math.floor(mins / 60)} hr ago`;
+}
+
 export default function DashboardPage() {
-  const { role, logout } = useAuth();
+  useAuth(); // guards the route
   const [summary, setSummary] = useState<any>(null);
 
   useEffect(() => {
     api.dashboardSummary().then(setSummary);
   }, []);
 
-  if (!summary) {
-    return (
-      <main className="min-h-screen flex items-center justify-center bg-[#FAFAF9]">
-        <div className="text-center">
-          <h2 className="text-3xl font-bold text-[#14213D]">Executive Dashboard</h2>
-          <p className="mt-3 text-gray-500">Loading dashboard...</p>
-        </div>
-      </main>
-    );
-  }
-
   return (
-    <div className="min-h-screen bg-[#FAFAF9] flex">
-      <aside className="hidden lg:flex w-72 flex-col bg-[#14213D] text-white">
-        <div className="p-8 border-b border-white/10">
-          <p className="uppercase tracking-[0.25em] text-xs text-[#D9A653]">
-            People Operations
-          </p>
-          <h1 className="mt-2 text-2xl font-bold">HR Platform</h1>
-        </div>
+    <Sidebar>
+      <main style={{ padding: 32, flex: 1 }}>
+        <h1>Executive Dashboard</h1>
 
-        <nav className="flex-1 p-6 space-y-2">
-          <div className="rounded-lg bg-white/10 px-4 py-3">Dashboard</div>
-          <div className="px-4 py-3 text-white/70">Employee Directory</div>
-          <div className="px-4 py-3 text-white/70">Departments</div>
-          <div className="px-4 py-3 text-white/70">Reports</div>
-          <div className="px-4 py-3 text-white/70">Settings</div>
-        </nav>
-
-        <div className="p-6 border-t border-white/10">
-          <button
-            onClick={logout}
-            className="w-full rounded-lg border border-white/20 py-3 hover:bg-white/10"
-          >
-            Log out
-          </button>
-        </div>
-      </aside>
-
-      <main className="flex-1 p-8">
-        <div className="flex flex-col md:flex-row justify-between gap-4 items-start md:items-center">
-          <div>
-            <p className="uppercase tracking-[0.25em] text-xs text-[#D9A653]">
-              Executive Dashboard
-            </p>
-            <h2 className="mt-2 text-4xl font-bold text-[#14213D]">
-              Workforce Overview
-            </h2>
-            <p className="mt-2 text-gray-500">
-              Monitor employee lifecycle and organizational health.
-            </p>
-          </div>
-
-          <div className="rounded-xl border bg-white px-5 py-3 shadow-sm">
-            Logged in as <span className="font-semibold capitalize">{role}</span>
-          </div>
-        </div>
-
-        <div className="mt-8 grid gap-6 md:grid-cols-2 xl:grid-cols-3">
-          <StatCard label="Total Employees" value={summary.total_employees} />
-          <StatCard label="Onboarding In Progress" value={summary.onboarding_in_progress} />
-          <StatCard label="Offboarding In Progress" value={summary.offboarding_in_progress} />
-          <StatCard label="Pending Approvals" value={summary.pending_approvals} />
-          <StatCard label="High Risk Employees" value={summary.high_risk_employees} />
-          <StatCard
-            label="Compliance Completion"
-            value={`${summary.compliance_completion_pct}%`}
-          />
-        </div>
-
-        <div className="mt-10 grid gap-8 xl:grid-cols-2">
-          <div className="rounded-2xl border bg-white p-6 shadow-sm">
-            <h3 className="mb-5 text-xl font-semibold text-[#14213D]">
-              Department-wise Employees
-            </h3>
-
-            <div className="h-80">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={summary.department_distribution}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis
-                    dataKey="name"
-                    angle={-30}
-                    textAnchor="end"
-                    height={70}
-                    tick={{ fontSize: 12 }}
-                  />
-                  <YAxis allowDecimals={false} />
-                  <Tooltip />
-                  <Bar dataKey="count" fill="#D9A653" radius={[8, 8, 0, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-          </div>
-
-          <div className="rounded-2xl border bg-white p-6 shadow-sm">
-            <h3 className="mb-5 text-xl font-semibold text-[#14213D]">
-              Role-wise Distribution
-            </h3>
-
-            <div className="h-80">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={summary.role_distribution}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis
-                    dataKey="name"
-                    angle={-30}
-                    textAnchor="end"
-                    height={70}
-                    tick={{ fontSize: 12 }}
-                  />
-                  <YAxis allowDecimals={false} />
-                  <Tooltip />
-                  <Bar dataKey="count" fill="#14213D" radius={[8, 8, 0, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-          </div>
-        </div>
-
-        <div className="mt-10 rounded-2xl border bg-white p-6 shadow-sm">
-          <h3 className="text-xl font-semibold text-[#14213D]">
-            HR Operations Summary
-          </h3>
-
-          <div className="mt-6 grid gap-6 md:grid-cols-4">
-            <div>
-              <p className="text-gray-500 text-sm">Compliance</p>
-              <p className="text-2xl font-bold">{summary.compliance_completion_pct}%</p>
+        {!summary ? (
+          <p>Loading...</p>
+        ) : (
+          <>
+            <div style={{ display: "flex", gap: 16, flexWrap: "wrap", marginTop: 16 }}>
+              <Widget label="Total Employees" value={summary.total_employees} />
+              <Widget label="Onboarded Today" value={summary.onboarded_today} />
+              <Widget label="Offboarded Today" value={summary.offboarded_today} />
+              <Widget label="Pending Onboarding" value={summary.pending_onboarding} />
+              <Widget label="Pending Offboarding" value={summary.pending_offboarding} />
+              <Widget label="Approval Pending" value={summary.pending_approvals} />
             </div>
 
-            <div>
-              <p className="text-gray-500 text-sm">Pending Approvals</p>
-              <p className="text-2xl font-bold">{summary.pending_approvals}</p>
+            <div style={{ display: "flex", gap: 32, marginTop: 32, flexWrap: "wrap" }}>
+              <div style={{ width: 380, height: 240 }}>
+                <h3>Onboarding Trend (7 days)</h3>
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={summary.onboarding_trend}>
+                    <XAxis dataKey="date" tick={{ fontSize: 10 }} />
+                    <YAxis allowDecimals={false} />
+                    <Tooltip />
+                    <Line type="monotone" dataKey="count" stroke="#6366f1" strokeWidth={2} />
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
+
+              <div style={{ width: 380, height: 240 }}>
+                <h3>Offboarding Trend (7 days)</h3>
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={summary.offboarding_trend}>
+                    <XAxis dataKey="date" tick={{ fontSize: 10 }} />
+                    <YAxis allowDecimals={false} />
+                    <Tooltip />
+                    <Line type="monotone" dataKey="count" stroke="#f43f5e" strokeWidth={2} />
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
+
+              <div style={{ width: 380, height: 240 }}>
+                <h3>Department-wise Employees</h3>
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={summary.department_distribution}>
+                    <XAxis dataKey="name" tick={{ fontSize: 10 }} angle={-30} textAnchor="end" height={60} />
+                    <YAxis allowDecimals={false} />
+                    <Tooltip />
+                    <Bar dataKey="count" fill="#6366f1" radius={[4, 4, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+
+              <div style={{ width: 380, height: 240 }}>
+                <h3>Role-wise Distribution</h3>
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={summary.role_distribution}>
+                    <XAxis dataKey="name" tick={{ fontSize: 10 }} angle={-30} textAnchor="end" height={60} />
+                    <YAxis allowDecimals={false} />
+                    <Tooltip />
+                    <Bar dataKey="count" fill="#14b8a6" radius={[4, 4, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
             </div>
 
-            <div>
-              <p className="text-gray-500 text-sm">High Risk</p>
-              <p className="text-2xl font-bold">{summary.high_risk_employees}</p>
+            <div style={{ marginTop: 32, maxWidth: 700 }}>
+              <h3>Recent Activity</h3>
+              <div style={{ border: "1px solid #eee", borderRadius: 8 }}>
+                {summary.recent_activity.map((a: any, i: number) => (
+                  <div key={i} style={{ padding: "10px 14px", borderBottom: i < summary.recent_activity.length - 1 ? "1px solid #f0f0f0" : "none", fontSize: 13 }}>
+                    <strong>{a.agent}</strong> — {a.action} <span style={{ color: "#999" }}>({timeAgo(a.timestamp)})</span>
+                  </div>
+                ))}
+              </div>
             </div>
-
-            <div>
-              <p className="text-gray-500 text-sm">Employees</p>
-              <p className="text-2xl font-bold">{summary.total_employees}</p>
-            </div>
-          </div>
-        </div>
+          </>
+        )}
       </main>
-    </div>
+    </Sidebar>
   );
 }
