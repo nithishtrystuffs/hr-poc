@@ -1,0 +1,252 @@
+[
+  {
+    "employee_id": "EMP-1001",
+    "timeline": [
+      {
+        "date": "10 Jan 2024",
+        "title": "Joined Organization",
+        "status": "Completed"
+      },
+      {
+        "date": "15 Jan 2024",
+        "title": "Laptop Allocated",
+        "status": "Completed"
+      },
+      {
+        "date": "18 Jan 2024",
+        "title": "HR Induction Completed",
+        "status": "Completed"
+      },
+      {
+        "date": "22 Jan 2024",
+        "title": "Project Assigned",
+        "status": "Completed"
+      }
+    ]
+  },
+  {
+    "employee_id": "EMP-1002",
+    "timeline": [
+      {
+        "date": "05 Feb 2024",
+        "title": "Joined Organization",
+        "status": "Completed"
+      },
+      {
+        "date": "12 Feb 2024",
+        "title": "Laptop Allocated",
+        "status": "Completed"
+      },
+      {
+        "date": "",
+        "title": "HR Induction Completed",
+        "status": "In Progress"
+      },
+      {
+        "date": "",
+        "title": "Project Assigned",
+        "status": "Pending"
+      }
+    ]
+  },
+  {
+    "employee_id": "EMP-1003",
+    "timeline": [
+      {
+        "date": "01 Mar 2024",
+        "title": "Joined Organization",
+        "status": "Completed"
+      },
+      {
+        "date": "05 Mar 2024",
+        "title": "Laptop Allocated",
+        "status": "Completed"
+      },
+      {
+        "date": "08 Mar 2024",
+        "title": "HR Induction Completed",
+        "status": "Completed"
+      },
+      {
+        "date": "",
+        "title": "Project Assigned",
+        "status": "Pending"
+      }
+    ]
+  },
+  {
+    "employee_id": "EMP-1004",
+    "timeline": [
+      {
+        "date": "15 Apr 2024",
+        "title": "Joined Organization",
+        "status": "Completed"
+      },
+      {
+        "date": "",
+        "title": "Laptop Allocated",
+        "status": "Pending"
+      },
+      {
+        "date": "",
+        "title": "HR Induction Completed",
+        "status": "Pending"
+      },
+      {
+        "date": "",
+        "title": "Project Assigned",
+        "status": "Pending"
+      }
+    ]
+  },
+  {
+    "employee_id": "EMP-1005",
+    "timeline": [
+      {
+        "date": "10 May 2024",
+        "title": "Joined Organization",
+        "status": "Completed"
+      },
+      {
+        "date": "14 May 2024",
+        "title": "Laptop Allocated",
+        "status": "Completed"
+      },
+      {
+        "date": "17 May 2024",
+        "title": "HR Induction Completed",
+        "status": "Completed"
+      },
+      {
+        "date": "25 May 2024",
+        "title": "Project Assigned",
+        "status": "Completed"
+      }
+    ]
+  },
+  {
+    "employee_id": "EMP-1006",
+    "timeline": [
+      {
+        "date": "03 Jun 2024",
+        "title": "Joined Organization",
+        "status": "Completed"
+      },
+      {
+        "date": "07 Jun 2024",
+        "title": "Laptop Allocated",
+        "status": "Completed"
+      },
+      {
+        "date": "",
+        "title": "HR Induction Completed",
+        "status": "In Progress"
+      },
+      {
+        "date": "",
+        "title": "Project Assigned",
+        "status": "Pending"
+      }
+    ]
+  },
+  {
+    "employee_id": "EMP-1007",
+    "timeline": [
+      {
+        "date": "12 Jul 2024",
+        "title": "Joined Organization",
+        "status": "Completed"
+      },
+      {
+        "date": "16 Jul 2024",
+        "title": "Laptop Allocated",
+        "status": "Completed"
+      },
+      {
+        "date": "19 Jul 2024",
+        "title": "HR Induction Completed",
+        "status": "Completed"
+      },
+      {
+        "date": "",
+        "title": "Project Assigned",
+        "status": "In Progress"
+      }
+    ]
+  },
+  {
+    "employee_id": "EMP-1008",
+    "timeline": [
+      {
+        "date": "05 Aug 2024",
+        "title": "Joined Organization",
+        "status": "Completed"
+      },
+      {
+        "date": "",
+        "title": "Laptop Allocated",
+        "status": "Pending"
+      },
+      {
+        "date": "",
+        "title": "HR Induction Completed",
+        "status": "Pending"
+      },
+      {
+        "date": "",
+        "title": "Project Assigned",
+        "status": "Pending"
+      }
+    ]
+  },
+  {
+    "employee_id": "EMP-1009",
+    "timeline": [
+      {
+        "date": "02 Sep 2024",
+        "title": "Joined Organization",
+        "status": "Completed"
+      },
+      {
+        "date": "06 Sep 2024",
+        "title": "Laptop Allocated",
+        "status": "Completed"
+      },
+      {
+        "date": "10 Sep 2024",
+        "title": "HR Induction Completed",
+        "status": "Completed"
+      },
+      {
+        "date": "17 Sep 2024",
+        "title": "Project Assigned",
+        "status": "Completed"
+      }
+    ]
+  },
+  {
+    "employee_id": "EMP-1010",
+    "timeline": [
+      {
+        "date": "01 Oct 2024",
+        "title": "Joined Organization",
+        "status": "Completed"
+      },
+      {
+        "date": "05 Oct 2024",
+        "title": "Laptop Allocated",
+        "status": "Completed"
+      },
+      {
+        "date": "09 Oct 2024",
+        "title": "HR Induction Completed",
+        "status": "In Progress"
+      },
+      {
+        "date": "",
+        "title": "Project Assigned",
+        "status": "Pending"
+      }
+    ]
+  }
+]
