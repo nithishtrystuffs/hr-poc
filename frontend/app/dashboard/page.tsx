@@ -16,9 +16,9 @@ import { api } from "../../lib/api";
 import { useAuth } from "../../lib/useAuth";
 
 import Sidebar from "../components/Sidebar";
-import DashboardHeader from "../components/DashboardHeader";
-import StatCard from "../components/StatCard";
-import ChartCard from "../components/ChartCard";
+import DashboardHeader from "./DashboardHeader";
+import StatCard from "../dashboard/StatCard";
+import ChartCard from "./ChartCard";
 
 function timeAgo(timestamp: string) {
   const diffMs = Date.now() - new Date(timestamp).getTime();
