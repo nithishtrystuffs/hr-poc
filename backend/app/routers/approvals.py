@@ -2,12 +2,20 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 import datetime
 from app.database import get_db
-from app.models import Approval
+from app.models import Approval, OnboardingTracker
 from app.schemas.employee import ApprovalDecision
-
+ 
 router = APIRouter(prefix="/approvals", tags=["approvals"])
-
-
+ 
+# Of the 4 approver roles, only these two map to a step in the
+# onboarding tracker's STEPS list (Manager Approval / IT Approval).
+# HR and Security approvals stay in the approvals table only, same as before.
+TRACKER_STEP_BY_ROLE = {
+    "Manager": "Manager Approval",
+    "IT": "IT Approval",
+}
+ 
+ 
 @router.get("/{employee_id}")
 def get_approvals(employee_id: str, db: Session = Depends(get_db)):
     rows = db.query(Approval).filter(Approval.employee_id == employee_id).all()
@@ -15,8 +23,8 @@ def get_approvals(employee_id: str, db: Session = Depends(get_db)):
         {"approver_role": r.approver_role, "workflow_type": r.workflow_type, "status": r.status}
         for r in rows
     ]
-
-
+ 
+ 
 @router.post("/{employee_id}/{approver_role}/decide")
 def decide_approval(employee_id: str, approver_role: str, payload: ApprovalDecision, db: Session = Depends(get_db)):
     record = (
@@ -32,4 +40,13 @@ def decide_approval(employee_id: str, approver_role: str, payload: ApprovalDecis
     record.status = payload.status
     record.decided_at = datetime.datetime.utcnow()
     db.commit()
+ 
+    # Reflect Manager/IT approval decisions in the onboarding tracker so
+    # progress (used by the dashboard table) can actually reach 100%.
+    step = TRACKER_STEP_BY_ROLE.get(approver_role)
+    if step:
+        tracker_status = "completed" if payload.status == "approved" else "failed"
+        db.add(OnboardingTracker(employee_id=employee_id, step=step, status=tracker_status))
+        db.commit()
+ 
     return {"employee_id": employee_id, "approver_role": approver_role, "status": record.status}
