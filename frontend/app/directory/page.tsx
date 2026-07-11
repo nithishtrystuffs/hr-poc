@@ -1,27 +1,32 @@
 "use client";
- 
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
 import { api } from "../../lib/api";
 import { useAuth } from "../../lib/useAuth";
 import Sidebar from "../components/Sidebar";
- 
+
 export default function DirectoryPage() {
+  useAuth();
   const router = useRouter();
- 
-  const { role, logout } = useAuth();
   const [employees, setEmployees] = useState<any[]>([]);
   const [syncing, setSyncing] = useState(false);
-  const [search, setSearch] = useState("");
- 
+
+  const [nameFilter, setNameFilter] = useState("");
+  const [idFilter, setIdFilter] = useState("");
+  const [deptFilter, setDeptFilter] = useState("");
+  const [roleFilter, setRoleFilter] = useState("");
+  const [officeFilter, setOfficeFilter] = useState("");
+  const [statusFilter, setStatusFilter] = useState("");
+  const [experienceFilter, setExperienceFilter] = useState("");
+
   async function load() {
     setEmployees(await api.listEmployees());
   }
- 
+
   useEffect(() => {
     load();
   }, []);
- 
+
   async function handleSync() {
     setSyncing(true);
     try {
@@ -31,202 +36,99 @@ export default function DirectoryPage() {
       setSyncing(false);
     }
   }
- 
-  const filtered = useMemo(() => {
-    const q = search.toLowerCase();
-    return employees.filter((e) =>
-      [e.name, e.department, e.role, e.employee_id, e.email]
-        .join(" ")
-        .toLowerCase()
-        .includes(q)
-    );
-  }, [employees, search]);
- 
-  const statusClass = (s: string) => {
-    switch (s?.toLowerCase()) {
-      case "active":
-        return "bg-green-100 text-green-700";
-      case "onboarding":
-        return "bg-amber-100 text-amber-700";
-      case "inactive":
-        return "bg-red-100 text-red-700";
-      default:
-        return "bg-gray-100 text-gray-700";
-    }
-  };
+
+  const departments = Array.from(new Set(employees.map((e) => e.department))).sort();
+  const roles = Array.from(new Set(employees.map((e) => e.role).filter(Boolean))).sort();
+  const offices = Array.from(new Set(employees.map((e) => e.office).filter(Boolean))).sort();
+  const statuses = Array.from(new Set(employees.map((e) => e.status))).sort();
+  const experienceLevels = Array.from(new Set(employees.map((e) => e.experience_level).filter(Boolean))).sort();
+
+  const filtered = employees.filter((e) => {
+    if (nameFilter && !e.name.toLowerCase().includes(nameFilter.toLowerCase())) return false;
+    if (idFilter && !e.employee_id.toLowerCase().includes(idFilter.toLowerCase())) return false;
+    if (deptFilter && e.department !== deptFilter) return false;
+    if (roleFilter && e.role !== roleFilter) return false;
+    if (officeFilter && e.office !== officeFilter) return false;
+    if (statusFilter && e.status !== statusFilter) return false;
+    if (experienceFilter && e.experience_level !== experienceFilter) return false;
+    return true;
+  });
+
+  const selectStyle = { padding: 6, fontSize: 13 };
+  const inputStyle = { padding: 6, fontSize: 13, width: 140 };
+
   return (
-  <Sidebar>
-    <div className="bg-[#FAFAF9] min-h-screen p-8">
- 
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
- 
-        <div>
-          <p className="uppercase tracking-[0.25em] text-xs text-[#D9A653]">
-            Employee Management
-          </p>
- 
-          <h2 className="mt-2 text-4xl font-bold text-[#14213D]">
-            Employee Directory
-          </h2>
- 
-          <p className="mt-2 text-gray-500">
-            View and manage employee records.
-          </p>
-        </div>
- 
-        <div className="flex gap-3 items-center">
- 
-          <div className="rounded-xl border bg-white px-4 py-3 shadow-sm">
-            Logged in as{" "}
-            <span className="font-semibold capitalize">
-              {role}
-            </span>
-          </div>
- 
-          <button
-            onClick={handleSync}
-            disabled={syncing}
-            className="rounded-xl bg-[#14213D] px-5 py-3 text-white hover:bg-[#D9A653] disabled:opacity-60"
-          >
+    <Sidebar>
+      <main style={{ padding: 32, flex: 1 }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <h1>Employee Directory</h1>
+          <button onClick={handleSync} disabled={syncing}>
             {syncing ? "Syncing..." : "Sync from HRMS"}
           </button>
- 
         </div>
- 
-      </div>
- 
-      <div className="mt-8 rounded-2xl border bg-white shadow-sm">
- 
-        <div className="flex flex-col md:flex-row justify-between gap-4 border-b p-6">
- 
-          <input
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search employees..."
-            className="w-full md:max-w-md rounded-xl border px-4 py-3 outline-none focus:ring-2 focus:ring-[#D9A653]"
-          />
- 
-          <div className="self-center text-sm text-gray-500">
-            {filtered.length} Employee(s)
-          </div>
- 
+
+        <div style={{ display: "flex", gap: 8, flexWrap: "wrap", margin: "16px 0" }}>
+          <input style={inputStyle} placeholder="Name" value={nameFilter} onChange={(e) => setNameFilter(e.target.value)} />
+          <input style={inputStyle} placeholder="Employee ID" value={idFilter} onChange={(e) => setIdFilter(e.target.value)} />
+          <select style={selectStyle} value={deptFilter} onChange={(e) => setDeptFilter(e.target.value)}>
+            <option value="">All Departments</option>
+            {departments.map((d) => <option key={d} value={d}>{d}</option>)}
+          </select>
+          <select style={selectStyle} value={roleFilter} onChange={(e) => setRoleFilter(e.target.value)}>
+            <option value="">All Roles</option>
+            {roles.map((r) => <option key={r} value={r}>{r}</option>)}
+          </select>
+          <select style={selectStyle} value={officeFilter} onChange={(e) => setOfficeFilter(e.target.value)}>
+            <option value="">All Offices</option>
+            {offices.map((o) => <option key={o} value={o}>{o}</option>)}
+          </select>
+          <select style={selectStyle} value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}>
+            <option value="">All Statuses</option>
+            {statuses.map((s) => <option key={s} value={s}>{s}</option>)}
+          </select>
+          <select style={selectStyle} value={experienceFilter} onChange={(e) => setExperienceFilter(e.target.value)}>
+            <option value="">All Experience Levels</option>
+            {experienceLevels.map((exp) => <option key={exp} value={exp}>{exp}</option>)}
+          </select>
         </div>
- 
-        <div className="overflow-x-auto">
- 
-          <table className="min-w-full">
- 
-            <thead className="bg-gray-50">
- 
-              <tr className="text-left text-sm text-gray-600">
- 
-                <th className="p-4">Employee</th>
-                <th className="p-4">Department</th>
-                <th className="p-4">Role</th>
-                <th className="p-4">Status</th>
-                <th className="p-4">Profile</th>
- 
-              </tr>
- 
-            </thead>
- 
-            <tbody>
- 
-              {filtered.map((e) => (
- 
-                <tr key={e.id} className="border-t hover:bg-gray-50">
- 
-                  <td className="p-4">
- 
-                    <div className="flex items-center gap-3">
- 
-                      <div className="flex h-11 w-11 items-center justify-center rounded-full bg-[#14213D] font-bold text-white">
-                        {e.name?.split(" ").map((x: string) => x[0]).join("").slice(0, 2)}
-                      </div>
- 
-                      <div>
- 
-                        <div className="font-semibold text-[#14213D]">
-                          {e.name}
-                        </div>
- 
-                        <div className="text-xs text-gray-500">
-                          {e.employee_id}
-                        </div>
- 
-                        <div className="text-xs text-gray-500">
-                          {e.email}
-                        </div>
- 
-                      </div>
- 
-                    </div>
- 
-                  </td>
- 
-                  <td className="p-4">
- 
-                    <div>{e.department}</div>
- 
-                    <div className="text-xs text-gray-500">
-                      {e.office}
-                    </div>
- 
-                  </td>
- 
-                  <td className="p-4">
-                    {e.role || "—"}
-                  </td>
- 
-                  <td className="p-4">
- 
-                    <span
-                      className={`rounded-full px-3 py-1 text-xs font-semibold ${statusClass(
-                        e.status
-                      )}`}
-                    >
-                      {e.status}
+
+        <p style={{ fontSize: 13, color: "#666" }}>{filtered.length} of {employees.length} employees</p>
+
+        <table style={{ borderCollapse: "collapse", width: "100%" }}>
+          <thead>
+            <tr style={{ textAlign: "left", borderBottom: "2px solid #eee" }}>
+              <th>Name</th><th>Department</th><th>Role</th><th>Experience</th><th>Manager</th>
+              <th>Status</th><th>Progress</th><th></th>
+            </tr>
+          </thead>
+          <tbody>
+            {filtered.map((e) => (
+              <tr key={e.id} style={{ borderBottom: "1px solid #f5f5f5" }}>
+                <td style={{ padding: "8px 0" }}>{e.name}</td>
+                <td>{e.department}</td>
+                <td>{e.role || "—"}</td>
+                <td>
+                  {e.experience_level && (
+                    <span style={{
+                      fontSize: 11, padding: "2px 8px", borderRadius: 10,
+                      background: e.experience_level === "fresher" ? "#e0f2fe" : "#ede9fe",
+                      color: e.experience_level === "fresher" ? "#0369a1" : "#6d28d9",
+                    }}>
+                      {e.experience_level}
                     </span>
- 
-                  </td>
- 
-                <td className="p-4">
-  <button
-    onClick={() => router.push(`/directory/${e.id}`)}
-    className="rounded-lg bg-[#14213D] px-4 py-2 text-sm font-medium text-white hover:bg-[#243654] transition"
-  >
-    View
-  </button>
-</td>
- 
-                </tr>
- 
-              ))}
- 
-              {filtered.length === 0 && (
- 
-                <tr>
- 
-                  <td
-                    colSpan={5}
-                    className="p-10 text-center text-gray-500"
-                  >
-                    No employees found.
-                  </td>
- 
-                </tr>
- 
-              )}
- 
-            </tbody>
- 
-          </table>
- 
-        </div>
- 
-      </div>
- 
-    </div>
-  </Sidebar>
-);
+                  )}
+                </td>
+                <td>{e.manager || "—"}</td>
+                <td>{e.status}</td>
+                <td>{e.completion_pct}%</td>
+                <td>
+                  <button onClick={() => router.push(`/profile/${e.id}`)}>View</button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </main>
+    </Sidebar>
+  );
 }
