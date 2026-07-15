@@ -15,6 +15,20 @@ from app.routers import (
     auth, employees, hrms_sync, onboarding, offboarding,
     approvals, reports, audit, dashboard, profile, insights,
     decisions, compliance,
+    auth,
+    employees,
+    hrms_sync,
+    onboarding,
+    offboarding,
+    access,
+    assets,
+    approvals,
+    reports,
+    audit,
+    dashboard,
+    profile,
+    insights,
+    hr_assistant,   # <-- NEW
 )
 
 app = FastAPI(title="Onboarding/Offboarding POC API")
@@ -27,6 +41,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Existing Routers
 app.include_router(auth.router)
 app.include_router(employees.router)
 app.include_router(hrms_sync.router)
@@ -41,13 +56,23 @@ app.include_router(insights.router)
 app.include_router(decisions.router)
 app.include_router(compliance.router)
 
+# HR Assistant Router
+app.include_router(hr_assistant.router)
+
 
 @app.on_event("startup")
 def on_startup():
+    """
+    Create database tables and warm up Ollama.
+    """
     Base.metadata.create_all(bind=engine)
     prewarm()
 
 
 @app.get("/")
 def health():
-    return {"status": "backend running"}
+    return {
+        "status": "backend running",
+        "service": "HR Onboarding/Offboarding POC",
+        "hr_assistant": "available"
+    }
