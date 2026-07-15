@@ -9,7 +9,7 @@ import json
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from app.database import get_db
-from app.models import OffboardingTracker, Employee, OffboardingTask
+from app.models import OffboardingTracker, Employee, OffboardingTask, AssetAllocation
 from app.schemas.employee import ExitRequestCreate, TaskDecision, TaskSelectionUpdate
 from app.orchestrators.offboarding_orchestrator import run_offboarding
 from app.services.track_status import get_all_offboarding_track_statuses, recompute_employee_offboarding_status
@@ -97,6 +97,22 @@ def decide_task(employee_id: str, task_id: str, payload: TaskDecision, db: Sessi
     task.status = payload.status
     task.decided_at = datetime.datetime.utcnow()
     db.commit()
+
+    # Approving "Recover Assets" is the real-world trigger for the asset
+    # actually being returned -- without this, AssetAllocation stayed
+    # stuck at "pending_return" forever, even after IT approved the
+    # task, which would make AI Insights' overdue-asset check flag it
+    # forever regardless of approval.
+    if task.track == "IT" and task.task_name == "Recover Assets" and payload.status == "approved":
+        asset_record = (
+            db.query(AssetAllocation)
+            .filter(AssetAllocation.employee_id == employee_id)
+            .order_by(AssetAllocation.created_at.desc())
+            .first()
+        )
+        if asset_record:
+            asset_record.status = "returned"
+            db.commit()
 
     recompute_employee_offboarding_status(db, employee_id)
 
