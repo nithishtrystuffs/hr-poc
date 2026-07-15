@@ -31,3 +31,13 @@ Thumbs.db
 
 # Docker
 *.log
+# ==========================
+# HR Assistant (Generated Files)
+# ==========================
+
+# FAISS index (generated after /hr-assistant/ingest)
+backend/storage/faiss/
+
+# Ignore all generated storage files
+backend/storage/*.index
+backend/storage/*.pkl
