@@ -35,7 +35,6 @@ async function request(path, options = {}) {
   return res.json();
 }
 
-
 export const api = {
   login: (email, password) =>
     request("/auth/login", { method: "POST", body: JSON.stringify({ email, password }) }),
@@ -58,12 +57,17 @@ export const api = {
     }),
   approvalsForRole: (role) => request(`/approvals/pending/${role}`),
   insightsSummary: () => request("/insights/summary"),
+  employeeDecisions: (id) => request(`/employees/${id}/decisions`),
+  complianceSummary: () => request("/compliance/summary"),
+  generateReport: (id, reportType) => request(`/reports/${id}?report_type=${reportType}`),
   offboardingStatus: (id) => request(`/offboarding/${id}/status`),
-  accessRecommendation: (id) => request(`/access/${id}/recommendation`),
-  assets: (id) => request(`/assets/${id}`),
-  approvals: (id) => request(`/approvals/${id}`),
-  decideApproval: (id, role, status) =>
-    request(`/approvals/${id}/${role}/decide`, { method: "POST", body: JSON.stringify({ status }) }),
+  offboardingTasks: (id) => request(`/offboarding/${id}/tasks`),
+  decideOffboardingTask: (id, taskId, status) =>
+    request(`/offboarding/${id}/tasks/${taskId}/decide`, { method: "POST", body: JSON.stringify({ status }) }),
+  updateOffboardingTaskSelection: (id, taskId, selectedOptions) =>
+    request(`/offboarding/${id}/tasks/${taskId}/selection`, {
+      method: "PATCH", body: JSON.stringify({ selected_options: selectedOptions }),
+    }),
   auditTrail: (id) => request(`/audit/${id}`),
   dashboardSummary: () => request("/dashboard/summary"),
 };
