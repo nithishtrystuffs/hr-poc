@@ -38,7 +38,7 @@ class EmployeeOut(BaseModel):
 
 
 class ExitRequestCreate(BaseModel):
-    employee_id: str
+    # employee_id: str
     last_working_day: Optional[str] = None
     exit_reason: Optional[str] = None
     sync_source: Optional[str] = "manual"
