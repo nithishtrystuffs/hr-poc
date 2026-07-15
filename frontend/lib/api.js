@@ -1,6 +1,6 @@
 // Single place all screens call through -- keeps the API base URL, auth
 // token attachment, and fetch error handling consistent across every page.
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+export const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
 // --- token storage ---
 export function setToken(token, role) {
@@ -34,6 +34,7 @@ async function request(path, options = {}) {
   }
   return res.json();
 }
+
 
 export const api = {
   login: (email, password) =>
