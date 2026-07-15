@@ -208,3 +208,69 @@ class AuditLog(Base):
     action = Column(String, nullable=False)
     detail = Column(Text, nullable=True)
     timestamp = Column(DateTime, default=datetime.datetime.utcnow)
+
+# ==========================================================
+# HR Assistant Models
+# ==========================================================
+
+class PolicyDocument(Base):
+    __tablename__ = "policy_documents"
+
+    id = Column(String, primary_key=True, default=gen_id)
+    title = Column(String, nullable=False)
+    filename = Column(String, unique=True, nullable=False)
+    created_at = Column(DateTime, default=datetime.datetime.utcnow)
+
+    chunks = relationship(
+        "PolicyChunk",
+        back_populates="document",
+        cascade="all, delete-orphan",
+    )
+
+
+class PolicyChunk(Base):
+    __tablename__ = "policy_chunks"
+
+    id = Column(String, primary_key=True, default=gen_id)
+    document_id = Column(String, ForeignKey("policy_documents.id"), nullable=False)
+    content = Column(Text, nullable=False)
+    chunk_index = Column(String, nullable=False)
+    created_at = Column(DateTime, default=datetime.datetime.utcnow)
+
+    document = relationship(
+        "PolicyDocument",
+        back_populates="chunks",
+    )
+
+
+class Conversation(Base):
+    __tablename__ = "conversations"
+
+    id = Column(String, primary_key=True, default=gen_id)
+    employee_id = Column(String, ForeignKey("employees.id"), nullable=False)
+    created_at = Column(DateTime, default=datetime.datetime.utcnow)
+
+    messages = relationship(
+        "Message",
+        back_populates="conversation",
+        cascade="all, delete-orphan",
+    )
+
+
+class Message(Base):
+    __tablename__ = "messages"
+
+    id = Column(String, primary_key=True, default=gen_id)
+    conversation_id = Column(
+        String,
+        ForeignKey("conversations.id"),
+        nullable=False,
+    )
+    role = Column(String, nullable=False)  # user | assistant
+    content = Column(Text, nullable=False)
+    created_at = Column(DateTime, default=datetime.datetime.utcnow)
+
+    conversation = relationship(
+        "Conversation",
+        back_populates="messages",
+    )

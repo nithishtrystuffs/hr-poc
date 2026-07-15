@@ -41,6 +41,33 @@ def call_ollama_json(prompt: str) -> dict:
         return json.loads(raw)
     except (requests.RequestException, json.JSONDecodeError, KeyError) as e:
         raise OllamaError(str(e)) from e
+    
+
+def call_ollama_text(prompt: str) -> str:
+    """
+    Calls Ollama in normal text mode.
+
+    Used by the HR Assistant chatbot.
+    Raises OllamaError on any failure so callers can
+    handle errors gracefully.
+    """
+    try:
+        response = requests.post(
+            f"{OLLAMA_URL}/api/generate",
+            json={
+                "model": OLLAMA_MODEL,
+                "prompt": prompt,
+                "stream": False,
+            },
+            timeout=TIMEOUT_SECONDS,
+        )
+
+        response.raise_for_status()
+
+        return response.json().get("response", "").strip()
+
+    except (requests.RequestException, KeyError) as e:
+        raise OllamaError(str(e)) from e
 
 
 def prewarm():
@@ -49,3 +76,4 @@ def prewarm():
         call_ollama_json('Respond with JSON: {"status": "ok"}')
     except OllamaError:
         pass  # non-fatal -- Ollama may not be up yet in dev
+
