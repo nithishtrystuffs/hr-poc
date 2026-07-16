@@ -56,3 +56,7 @@ class TaskDecision(BaseModel):
 
 class TaskSelectionUpdate(BaseModel):
     selected_options: list[str]  # the approver's edited choice, for multi_select/single_select tasks only
+
+class EmailDraftUpdate(BaseModel):
+    subject: str
+    body: str

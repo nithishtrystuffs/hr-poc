@@ -1,15 +1,17 @@
 """
-Drafts the "please send your missing documents" email. Simulated only --
-this is never actually sent (see architecture note in orchestrator),
-just generated and logged so the demo/tracker can show what would have
-gone out. Ollama writes the body; falls back to a plain template if
-Ollama is unavailable.
+Drafts the missing-documents request email -- revived from an earlier
+version of this project (was removed when document handling was
+simplified to presence/absence tracking, now needed again for real
+send + reply workflow). Ollama writes the content; falls back to a
+plain template if Ollama is unavailable.
 """
 from app.ai_client import call_ollama_json, OllamaError
 
 PROMPT_TEMPLATE = """Write a short, polite HR onboarding email to {name}
-requesting these missing documents: {missing_docs}. Keep it under 100 words,
-professional but warm tone. Respond ONLY with JSON in this exact shape:
+requesting these missing documents: {missing_docs}. Ask them to reply
+directly to this email with the document(s) attached (PDF or image).
+Keep it under 100 words, professional but warm tone. Respond ONLY with
+JSON in this exact shape:
 {{"subject": "<email subject line>", "body": "<email body text>"}}
 """
 
@@ -20,8 +22,9 @@ def _fallback_template(name: str, missing_docs: list[str]) -> dict:
         "subject": "Action Required: Missing Onboarding Documents",
         "body": (
             f"Hi {name},\n\nTo complete your onboarding, we still need the following "
-            f"document(s) from you:\n{doc_list}\n\nPlease share these at your earliest "
-            f"convenience so we can proceed with your onboarding.\n\nThanks,\nHR Team"
+            f"document(s) from you:\n{doc_list}\n\nPlease reply directly to this email "
+            f"with the document(s) attached (PDF or image) at your earliest convenience.\n\n"
+            f"Thanks,\nHR Team"
         ),
     }
 

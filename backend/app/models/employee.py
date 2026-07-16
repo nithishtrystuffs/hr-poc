@@ -150,10 +150,27 @@ class EmployeeDocument(Base):
     id = Column(String, primary_key=True, default=gen_id)
     employee_id = Column(String, ForeignKey("employees.id"), nullable=False)
     document_name = Column(String, nullable=False)
-    status = Column(String, default="pending")  # pending | received
+    status = Column(String, default="pending")  # pending | under_review | received
     requested_at = Column(DateTime, default=datetime.datetime.utcnow)
     received_at = Column(DateTime, nullable=True)
+    file_path = Column(String, nullable=True)  # where the downloaded attachment is stored, once received
 
+class DocumentRequestEmail(Base):
+    """Tracks the real email lifecycle: drafted -> sent -> replied.
+    message_id is the SMTP Message-ID of the SENT email -- used to
+    match the employee's reply back via In-Reply-To/References
+    threading headers (see email_client.py)."""
+    __tablename__ = "document_request_emails"
+
+    id = Column(String, primary_key=True, default=gen_id)
+    employee_id = Column(String, ForeignKey("employees.id"), nullable=False)
+    subject = Column(String, nullable=False)
+    body = Column(Text, nullable=False)
+    status = Column(String, default="drafted")  # drafted | sent | replied
+    message_id = Column(String, nullable=True)
+    generated_at = Column(DateTime, default=datetime.datetime.utcnow)
+    sent_at = Column(DateTime, nullable=True)
+    replied_at = Column(DateTime, nullable=True)
 
 class OnboardingTask(Base):
     """One row per task per track (HR/IT/Security/Manager). This is the
@@ -301,3 +318,18 @@ class Message(Base):
         "Conversation",
         back_populates="messages",
     )
+
+class ReceivedAttachment(Base):
+    """A file received via email reply, not yet matched to a specific
+    required document. Exists so we never guess by position -- HR
+    explicitly matches each file to a document type unless there is
+    exactly one file and exactly one missing document (the only truly
+    unambiguous case)."""
+    __tablename__ = "received_attachments"
+
+    id = Column(String, primary_key=True, default=gen_id)
+    employee_id = Column(String, ForeignKey("employees.id"), nullable=False)
+    file_path = Column(String, nullable=False)
+    original_filename = Column(String, nullable=True)
+    matched_document_name = Column(String, nullable=True)
+    received_at = Column(DateTime, default=datetime.datetime.utcnow)

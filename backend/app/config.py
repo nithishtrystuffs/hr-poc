@@ -81,3 +81,6 @@ def get_all_assets() -> list[str]:
 
 def get_all_project_names() -> list[str]:
     return [p["name"] for p in get_projects()]
+
+def get_document_keywords() -> dict:
+    return _load("documents_keywords.json")

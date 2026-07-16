@@ -12,6 +12,7 @@ backend/poc_local.db
 
 # Generated reports (don't commit PDFs)
 backend/app/reports/*.pdf
+backend/app/uploads/*
 
 # Node / Next.js
 frontend/node_modules/
