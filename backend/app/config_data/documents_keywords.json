@@ -1,0 +1,7 @@
+{
+  "Government ID Proof": ["id", "pan", "aadhar", "aadhaar", "passport", "govt", "government", "voter"],
+  "Address Proof": ["address", "utility", "residence", "electricity", "rent"],
+  "Educational Certificates": ["degree", "certificate", "education", "marksheet", "diploma", "provisional"],
+  "Previous Employment Relieving Letter": ["relieving", "experience", "employment", "resignation"],
+  "Bank Account Details": ["bank", "passbook", "statement", "account", "cheque", "iban"]
+}

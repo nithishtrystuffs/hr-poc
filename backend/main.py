@@ -5,12 +5,16 @@ POC -- use Alembic migrations if this grows past the POC), pre-warms Ollama.
 from dotenv import load_dotenv
 load_dotenv()
 
+import asyncio
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.database import Base, engine
+from app.models import DocumentRequestEmail
+from app.database import Base, engine, SessionLocal
 from app import models  # noqa: F401 -- ensures models are registered before create_all
 from app.ai_client import prewarm
+from app.routers.onboarding import check_inbox_for_employee
 from app.routers import (
     auth, employees, hrms_sync, onboarding, offboarding,
     approvals, reports, audit, dashboard, profile, insights,
@@ -59,6 +63,21 @@ app.include_router(compliance.router)
 # HR Assistant Router
 app.include_router(hr_assistant.router)
 
+POLL_INTERVAL_SECONDS = 60
+
+async def _poll_inboxes_loop():
+    while True:
+        await asyncio.sleep(POLL_INTERVAL_SECONDS)
+        db = SessionLocal()
+        try:
+            awaiting = db.query(DocumentRequestEmail).filter(DocumentRequestEmail.status == "sent").all()
+            for record in awaiting:
+                try:
+                    check_inbox_for_employee(record.employee_id, db)
+                except Exception as e:
+                    print(f"[INBOX POLL] Error checking employee {record.employee_id}: {e}")
+        finally:
+            db.close()
 
 @app.on_event("startup")
 def on_startup():
@@ -67,6 +86,7 @@ def on_startup():
     """
     Base.metadata.create_all(bind=engine)
     prewarm()
+    asyncio.create_task(_poll_inboxes_loop())
 
 
 @app.get("/")

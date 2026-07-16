@@ -19,7 +19,7 @@ from sqlalchemy.orm import Session
 from app.models import (
     Employee, OnboardingTracker, RoleClassification, AccessRecommendation,
     AssetAllocation, AuditLog,
-    EmployeeDocument, OnboardingTask,
+    EmployeeDocument, OnboardingTask, DocumentRequestEmail
 )
 from app.agents.role_classifier import classify_role
 from app.agents.access_recommender import recommend_access
@@ -28,6 +28,8 @@ from app.agents.compliance_recommender import recommend_compliance
 from app.agents.project_recommender_agent import recommend_projects
 from app.agents.privileged_access_agent import review_privileged_access
 from app.agents.team_intro_agent import draft_team_intro
+from app.agents.document_email_agent import draft_document_request_email
+from app import email_client
 from app.config import (
     get_required_documents, get_roles,
     get_all_applications, get_all_security_groups, get_all_assets, get_all_project_names,
@@ -94,6 +96,12 @@ def run_onboarding(db: Session, employee_id: str):
     if not employee:
         raise ValueError(f"Employee {employee_id} not found")
 
+    if employee.status != "registered":
+        return {
+            "status": employee.status,
+            "note": "Onboarding already in progress or further along -- no action taken to avoid duplicating tasks/emails.",
+        }
+    
     _mark(db, employee_id, STEP_REGISTERED, "completed")
     _mark(db, employee_id, STEP_VALIDATION, "running")
 
@@ -112,9 +120,12 @@ def run_onboarding(db: Session, employee_id: str):
                 db.add(EmployeeDocument(employee_id=employee_id, document_name=doc_name, status="pending"))
         db.commit()
 
+        _draft_and_queue_missing_document_email(db, employee, missing_docs)
+
+
         _mark(db, employee_id, STEP_VALIDATION, STATUS_BLOCKED)
         _audit(db, employee_id, "Validation Agent", "Blocked -- missing documents",
-               f"Missing: {', '.join(missing_docs)}. HR can review status and mark received once provided.")
+               f"Missing: {', '.join(missing_docs)}. Email drafted, awaiting HR approval to send.")
 
         employee.status = "documents_pending"
         db.commit()
@@ -275,3 +286,46 @@ def resume_after_documents(db: Session, employee_id: str):
            "Missing documents confirmed received; validation completed.")
 
     return _continue_after_validation(db, employee)
+
+def create_document_review_task(db: Session, employee_id: str, auto_matched_names: list[str], unmatched_count: int = 0):
+    note = ""
+    if auto_matched_names:
+        note += f"Automatically matched: {', '.join(auto_matched_names)}. "
+    if unmatched_count > 0:
+        note += (
+            f"{unmatched_count} received file(s) could not be auto-matched (multiple files/documents "
+            f"in play) -- use the matching tool below to assign each file to the correct document "
+            f"before approving."
+        )
+    _add_task(
+        db, employee_id, "HR", "Review Received Documents",
+        is_ai_generated=True, task_type="document_match",
+        ai_recommendation=note or "Documents received via email -- review before approving.",
+    )
+    _audit(db, employee_id, "Document Reply Handler", "Documents received via email", note)
+
+def _draft_and_queue_missing_document_email(db: Session, employee: Employee, missing_docs: list[str]):
+    """Drafts (via Ollama) and stages an HR-approval email task for the
+    given missing documents. Used both on initial Validation (first
+    request) and after a partial reply (follow-up request for whatever
+    is still missing) -- same mechanism, reusable, so the request/reply
+    loop is self-sustaining until everything required is received."""
+    existing_draft = db.query(DocumentRequestEmail).filter(
+        DocumentRequestEmail.employee_id == employee.id, DocumentRequestEmail.status == "drafted"
+    ).first()
+    if existing_draft:
+        return  # already have an unsent draft awaiting HR approval -- don't duplicate
+    draft = draft_document_request_email(employee.name, missing_docs)
+    email_record = DocumentRequestEmail(
+        employee_id=employee.id, subject=draft["subject"], body=draft["body"], status="drafted",
+    )
+    db.add(email_record)
+    db.commit()
+
+    _add_task(
+        db, employee.id, "HR", "Missing Document Request Email",
+        is_ai_generated=True, task_type="email_draft",
+        ai_recommendation=f"Drafted for missing: {', '.join(missing_docs)}. Review and approve to send.",
+    )
+    _audit(db, employee.id, "Validation Agent", "Document request email drafted",
+           f"Missing: {', '.join(missing_docs)}")
