@@ -224,7 +224,7 @@ export default function HrAssistantWidget({ collapsed = false }: { collapsed?: b
             onKeyDown={handleKeyDown}
             placeholder="Ask a question"
             disabled={loading}
-            className="flex-1 rounded-lg border border-gray-200 px-3 py-2 text-sm text-gray-900 placeholder-gray-400 outline-none focus:border-gray-400"
+            className="flex-1 rounded-lg border border-gray-200 px-3 py-2 text-sm outline-none focus:border-gray-400"
           />
           <button
             onClick={handleSend}
